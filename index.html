@@ -130,16 +130,17 @@
         
         <h1 id="question" class="text-4xl md:text-5xl font-bold text-gray-800 mb-8 cursive">Will you be my Valentine?</h1>
         
-        <div class="relative h-48 flex items-center justify-center gap-6">
+        <!-- Button Container: This is the boundary for the No button -->
+        <div id="button-container" class="relative h-64 flex items-center justify-center gap-6 overflow-visible">
             <!-- Yes Button -->
             <button id="yes-button" 
                 class="bg-[#ff4d6d] hover:bg-[#ff758f] text-white font-bold py-4 px-10 rounded-full shadow-lg transform transition active:scale-90 text-xl z-20">
                 YES! 😍
             </button>
 
-            <!-- No Button - Positioned to the side initially -->
+            <!-- No Button -->
             <button id="no-button" 
-                class="bg-gray-400 text-white font-semibold py-3 px-6 rounded-full shadow-md absolute left-1/2 ml-16 text-lg z-30 opacity-90 translate-x-12">
+                class="bg-gray-400 text-white font-semibold py-3 px-6 rounded-full shadow-md absolute left-1/2 ml-12 text-lg z-30 opacity-90 transition-all duration-300">
                 No
             </button>
         </div>
@@ -162,6 +163,7 @@
     <script>
         const noButton = document.getElementById('no-button');
         const yesButton = document.getElementById('yes-button');
+        const buttonContainer = document.getElementById('button-container');
         const mainCard = document.getElementById('main-card');
         const celebration = document.getElementById('celebration');
         const heartsContainer = document.getElementById('hearts-container');
@@ -189,24 +191,24 @@
             
             noCount++;
             noButton.innerText = messages[Math.floor(Math.random() * messages.length)];
-            noButton.classList.remove('left-1/2', 'ml-16', 'translate-x-12');
+            
+            // Remove initial layout classes once we start moving manually
+            noButton.classList.remove('left-1/2', 'ml-12', 'translate-x-12');
 
-            // Get boundaries of the main card and yes button
-            const cardRect = mainCard.getBoundingClientRect();
-            const yesRect = yesButton.getBoundingClientRect();
-            const padding = 15; // Inner margin from card edges
-
+            // Boundaries are now relative to the buttonContainer
+            const containerWidth = buttonContainer.clientWidth;
+            const containerHeight = buttonContainer.clientHeight;
+            
             if (noCount <= 5) {
                 // PHASE 1: BLOCKING
-                // Sit exactly on top of the Yes button
-                noButton.style.position = 'fixed';
-                noButton.style.left = yesRect.left + 'px';
-                noButton.style.top = yesRect.top + 'px';
-                noButton.style.width = yesRect.width + 'px';
-                noButton.style.height = yesRect.height + 'px';
+                // Match the Yes button's relative position exactly
+                noButton.style.left = yesButton.offsetLeft + 'px';
+                noButton.style.top = yesButton.offsetTop + 'px';
+                noButton.style.width = yesButton.offsetWidth + 'px';
+                noButton.style.height = yesButton.offsetHeight + 'px';
                 noButton.style.zIndex = '100';
             } else {
-                // PHASE 2: DODGING WITHIN CARD
+                // PHASE 2: DODGING WITHIN CONTAINER
                 noButton.style.width = 'auto';
                 noButton.style.height = 'auto';
                 noButton.style.zIndex = '30';
@@ -214,45 +216,33 @@
                 const btnWidth = noButton.offsetWidth;
                 const btnHeight = noButton.offsetHeight;
 
-                // Define safe random zone inside the white card
-                const minX = cardRect.left + padding;
-                const maxX = cardRect.right - btnWidth - padding;
-                const minY = cardRect.top + padding;
-                const maxY = cardRect.bottom - btnHeight - padding;
+                // Simple random position within the container bounds
+                // No complex viewport math needed because it's 'absolute' in a 'relative' box
+                const padding = 10;
+                const maxX = containerWidth - btnWidth - padding;
+                const maxY = containerHeight - btnHeight - padding;
 
-                // Safeguard for very small screens or long text:
-                // If the button is wider than the safe zone, just center it horizontally
-                let randomX, randomY;
+                const randomX = Math.max(padding, Math.random() * maxX);
+                const randomY = Math.max(padding, Math.random() * maxY);
 
-                if (maxX > minX) {
-                    randomX = Math.random() * (maxX - minX) + minX;
-                } else {
-                    randomX = cardRect.left + (cardRect.width / 2) - (btnWidth / 2);
-                }
-
-                if (maxY > minY) {
-                    randomY = Math.random() * (maxY - minY) + minY;
-                } else {
-                    randomY = cardRect.top + (cardRect.height / 2) - (btnHeight / 2);
-                }
-
-                noButton.style.position = 'fixed';
                 noButton.style.left = randomX + 'px';
                 noButton.style.top = randomY + 'px';
 
+                // Encourage the 'Yes' choice
                 scale += 0.2;
                 if (scale < 4) {
                     yesButton.style.transform = `scale(${scale})`;
                 }
             }
-
-            noButton.style.margin = '0';
         }
 
         // Listeners for the No button
         noButton.addEventListener('mouseover', moveButton);
         noButton.addEventListener('touchstart', (e) => moveButton(e), { passive: false });
-        noButton.addEventListener('click', moveButton);
+        noButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            moveButton(e);
+        });
 
         // Success Action
         yesButton.addEventListener('click', () => {
@@ -283,7 +273,7 @@
             }());
         });
 
-        // Floating Hearts
+        // Floating Hearts Background
         function createHeart() {
             const heart = document.createElement('div');
             heart.classList.add('floating-heart');
