@@ -137,9 +137,9 @@
                 YES! 😍
             </button>
 
-            <!-- No Button -->
+            <!-- No Button - Positioned to the side initially -->
             <button id="no-button" 
-                class="bg-gray-400 text-white font-semibold py-3 px-6 rounded-full shadow-md absolute text-lg z-30 opacity-90">
+                class="bg-gray-400 text-white font-semibold py-3 px-6 rounded-full shadow-md absolute left-1/2 ml-16 text-lg z-30 opacity-90 translate-x-12">
                 No
             </button>
         </div>
@@ -186,30 +186,37 @@
 
         function moveButton(e) {
             if (e) e.preventDefault();
+            
+            // Increment the interaction count
             noCount++;
 
-            // 1. Update text first
+            // Always update the text to keep it changing
             noButton.innerText = messages[Math.floor(Math.random() * messages.length)];
 
-            // 2. Constants for boundaries
+            // Clear initial relative classes to allow free movement
+            noButton.classList.remove('left-1/2', 'ml-16', 'translate-x-12');
+
+            // Get viewport and boundary information
             const padding = 20;
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
-            
-            // Reference position (Yes button center)
             const yesRect = yesButton.getBoundingClientRect();
 
             if (noCount <= 5) {
-                // For the first 5 times, sit exactly on top of the Yes button
+                // PHASE 1: BLOCKING
+                // For the first 5 interactions, sit exactly on top of the Yes button
                 noButton.style.position = 'fixed';
                 noButton.style.left = yesRect.left + 'px';
                 noButton.style.top = yesRect.top + 'px';
                 noButton.style.width = yesRect.width + 'px';
                 noButton.style.height = yesRect.height + 'px';
+                noButton.style.zIndex = '100'; // Make sure it blocks clicks
             } else {
-                // Return to auto width/height after blocking phase
+                // PHASE 2: DODGING
+                // Return to auto size
                 noButton.style.width = 'auto';
                 noButton.style.height = 'auto';
+                noButton.style.zIndex = '30';
                 
                 const btnWidth = noButton.offsetWidth;
                 const btnHeight = noButton.offsetHeight;
@@ -221,11 +228,11 @@
                 const rangeX = isSmallScreen ? viewportWidth * 0.25 : 140; 
                 const rangeY = isSmallScreen ? viewportHeight * 0.15 : 120;
 
-                // Generate random coordinates
+                // Generate random coordinates near the Yes button
                 let randomX = yesCenterX + (Math.random() * (rangeX * 2) - rangeX) - (btnWidth / 2);
                 let randomY = yesCenterY + (Math.random() * (rangeY * 2) - rangeY) - (btnHeight / 2);
 
-                // Boundary clamping
+                // Ensure it stays in the viewport
                 const minX = padding;
                 const minY = padding;
                 const maxX = viewportWidth - btnWidth - padding;
@@ -238,9 +245,9 @@
                 noButton.style.left = randomX + 'px';
                 noButton.style.top = randomY + 'px';
 
-                // Grow Yes button only once dodging begins
-                scale += 0.15;
-                if (scale < 3.5) {
+                // Make the Yes button grow more enticing as she tries to say No
+                scale += 0.2;
+                if (scale < 4) {
                     yesButton.style.transform = `scale(${scale})`;
                 }
             }
@@ -248,18 +255,12 @@
             noButton.style.margin = '0';
         }
 
-        // Event listeners for No button
+        // Listeners for the No button
         noButton.addEventListener('mouseover', moveButton);
-        
-        noButton.addEventListener('touchstart', (e) => {
-            moveButton(e);
-        }, { passive: false });
+        noButton.addEventListener('touchstart', (e) => moveButton(e), { passive: false });
+        noButton.addEventListener('click', moveButton);
 
-        noButton.addEventListener('click', (e) => {
-            moveButton(e);
-        });
-
-        // Yes Button Action
+        // Success Action
         yesButton.addEventListener('click', () => {
             celebration.classList.add('show');
             
@@ -288,24 +289,18 @@
             }());
         });
 
-        // Visual Effects: Background floating hearts
+        // Floating Hearts
         function createHeart() {
             const heart = document.createElement('div');
             heart.classList.add('floating-heart');
-            
             const shapes = ['❤️', '💖', '💗', '💕', '🌸'];
             heart.innerHTML = shapes[Math.floor(Math.random() * shapes.length)];
-            
             heart.style.left = Math.random() * 100 + 'vw';
             const size = Math.random() * 20 + 15;
             heart.style.fontSize = size + 'px';
             heart.style.setProperty('--duration', (Math.random() * 4 + 4) + 's');
-            
             heartsContainer.appendChild(heart);
-
-            setTimeout(() => {
-                heart.remove();
-            }, 8000);
+            setTimeout(() => heart.remove(), 8000);
         }
 
         setInterval(createHeart, 400);
