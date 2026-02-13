@@ -87,7 +87,7 @@
         }
 
         #no-button {
-            transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.2s, height 0.2s;
             white-space: nowrap;
         }
 
@@ -182,9 +182,11 @@
         ];
 
         let scale = 1;
+        let noCount = 0;
 
         function moveButton(e) {
             if (e) e.preventDefault();
+            noCount++;
 
             // 1. Update text first
             noButton.innerText = messages[Math.floor(Math.random() * messages.length)];
@@ -193,44 +195,57 @@
             const padding = 20;
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
-            const btnWidth = noButton.offsetWidth;
-            const btnHeight = noButton.offsetHeight;
             
             // Reference position (Yes button center)
             const yesRect = yesButton.getBoundingClientRect();
-            const yesCenterX = yesRect.left + (yesRect.width / 2);
-            const yesCenterY = yesRect.top + (yesRect.height / 2);
-            
-            // Adjust ranges based on viewport size for mobile friendliness
-            // On small screens, keep it closer so it doesn't clip
-            const isSmallScreen = viewportWidth < 600;
-            const rangeX = isSmallScreen ? viewportWidth * 0.25 : 140; 
-            const rangeY = isSmallScreen ? viewportHeight * 0.15 : 120;
 
-            // 3. Generate random coordinates relative to the Yes button center
-            let randomX = yesCenterX + (Math.random() * (rangeX * 2) - rangeX) - (btnWidth / 2);
-            let randomY = yesCenterY + (Math.random() * (rangeY * 2) - rangeY) - (btnHeight / 2);
+            if (noCount <= 5) {
+                // For the first 5 times, sit exactly on top of the Yes button
+                noButton.style.position = 'fixed';
+                noButton.style.left = yesRect.left + 'px';
+                noButton.style.top = yesRect.top + 'px';
+                noButton.style.width = yesRect.width + 'px';
+                noButton.style.height = yesRect.height + 'px';
+            } else {
+                // Return to auto width/height after blocking phase
+                noButton.style.width = 'auto';
+                noButton.style.height = 'auto';
+                
+                const btnWidth = noButton.offsetWidth;
+                const btnHeight = noButton.offsetHeight;
+                
+                const yesCenterX = yesRect.left + (yesRect.width / 2);
+                const yesCenterY = yesRect.top + (yesRect.height / 2);
+                
+                const isSmallScreen = viewportWidth < 600;
+                const rangeX = isSmallScreen ? viewportWidth * 0.25 : 140; 
+                const rangeY = isSmallScreen ? viewportHeight * 0.15 : 120;
 
-            // 4. Robust clamping to ensure it's always fully inside the viewport
-            const minX = padding;
-            const minY = padding;
-            const maxX = viewportWidth - btnWidth - padding;
-            const maxY = viewportHeight - btnHeight - padding;
+                // Generate random coordinates
+                let randomX = yesCenterX + (Math.random() * (rangeX * 2) - rangeX) - (btnWidth / 2);
+                let randomY = yesCenterY + (Math.random() * (rangeY * 2) - rangeY) - (btnHeight / 2);
 
-            randomX = Math.max(minX, Math.min(randomX, maxX));
-            randomY = Math.max(minY, Math.min(randomY, maxY));
+                // Boundary clamping
+                const minX = padding;
+                const minY = padding;
+                const maxX = viewportWidth - btnWidth - padding;
+                const maxY = viewportHeight - btnHeight - padding;
 
-            // 5. Apply new position
-            noButton.style.position = 'fixed';
-            noButton.style.left = randomX + 'px';
-            noButton.style.top = randomY + 'px';
-            noButton.style.margin = '0';
-            
-            // 6. Grow Yes button
-            scale += 0.15;
-            if (scale < 3.5) {
-                yesButton.style.transform = `scale(${scale})`;
+                randomX = Math.max(minX, Math.min(randomX, maxX));
+                randomY = Math.max(minY, Math.min(randomY, maxY));
+
+                noButton.style.position = 'fixed';
+                noButton.style.left = randomX + 'px';
+                noButton.style.top = randomY + 'px';
+
+                // Grow Yes button only once dodging begins
+                scale += 0.15;
+                if (scale < 3.5) {
+                    yesButton.style.transform = `scale(${scale})`;
+                }
             }
+
+            noButton.style.margin = '0';
         }
 
         // Event listeners for No button
