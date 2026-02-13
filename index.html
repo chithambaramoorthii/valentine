@@ -186,11 +186,13 @@
         function moveButton(e) {
             if (e) e.preventDefault();
 
-            // 1. Update text first so width/height changes
+            // 1. Update text first
             noButton.innerText = messages[Math.floor(Math.random() * messages.length)];
 
-            // 2. Constants for boundaries and proximity
-            const padding = 15;
+            // 2. Constants for boundaries
+            const padding = 20;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
             const btnWidth = noButton.offsetWidth;
             const btnHeight = noButton.offsetHeight;
             
@@ -199,28 +201,30 @@
             const yesCenterX = yesRect.left + (yesRect.width / 2);
             const yesCenterY = yesRect.top + (yesRect.height / 2);
             
-            // Tight ranges to keep it "close" to the Yes button area
-            // We use fixed pixel ranges for proximity, with viewport safety
-            const rangeX = 140; 
-            const rangeY = 120;
+            // Adjust ranges based on viewport size for mobile friendliness
+            // On small screens, keep it closer so it doesn't clip
+            const isSmallScreen = viewportWidth < 600;
+            const rangeX = isSmallScreen ? viewportWidth * 0.25 : 140; 
+            const rangeY = isSmallScreen ? viewportHeight * 0.15 : 120;
 
             // 3. Generate random coordinates relative to the Yes button center
             let randomX = yesCenterX + (Math.random() * (rangeX * 2) - rangeX) - (btnWidth / 2);
             let randomY = yesCenterY + (Math.random() * (rangeY * 2) - rangeY) - (btnHeight / 2);
 
-            // 4. Strict clamping to ensure it's always inside the viewport
-            const maxX = window.innerWidth - btnWidth - padding;
-            const maxY = window.innerHeight - btnHeight - padding;
+            // 4. Robust clamping to ensure it's always fully inside the viewport
+            const minX = padding;
+            const minY = padding;
+            const maxX = viewportWidth - btnWidth - padding;
+            const maxY = viewportHeight - btnHeight - padding;
 
-            // Apply clamping
-            randomX = Math.max(padding, Math.min(randomX, maxX));
-            randomY = Math.max(padding, Math.min(randomY, maxY));
+            randomX = Math.max(minX, Math.min(randomX, maxX));
+            randomY = Math.max(minY, Math.min(randomY, maxY));
 
             // 5. Apply new position
             noButton.style.position = 'fixed';
             noButton.style.left = randomX + 'px';
             noButton.style.top = randomY + 'px';
-            noButton.style.margin = '0'; // Prevent any external layout interference
+            noButton.style.margin = '0';
             
             // 6. Grow Yes button
             scale += 0.15;
