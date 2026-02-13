@@ -121,7 +121,7 @@
     <div id="hearts-container"></div>
 
     <!-- Question Card -->
-    <div id="main-card" class="glass p-8 md:p-12 rounded-[40px] text-center max-w-sm w-full z-10 entrance-anim mx-4">
+    <div id="main-card" class="glass p-8 md:p-12 rounded-[40px] text-center max-w-sm w-full z-10 entrance-anim mx-4 overflow-hidden">
         <div class="mb-6 inline-block p-4 bg-pink-100 rounded-full">
             <svg class="w-12 h-12 text-red-500 fill-current" viewBox="0 0 24 24">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -187,65 +187,59 @@
         function moveButton(e) {
             if (e) e.preventDefault();
             
-            // Increment the interaction count
             noCount++;
-
-            // Always update the text to keep it changing
             noButton.innerText = messages[Math.floor(Math.random() * messages.length)];
-
-            // Clear initial relative classes to allow free movement
             noButton.classList.remove('left-1/2', 'ml-16', 'translate-x-12');
 
-            // Get viewport and boundary information
-            const padding = 20;
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
+            // Get boundaries of the main card and yes button
+            const cardRect = mainCard.getBoundingClientRect();
             const yesRect = yesButton.getBoundingClientRect();
+            const padding = 15; // Inner margin from card edges
 
             if (noCount <= 5) {
                 // PHASE 1: BLOCKING
-                // For the first 5 interactions, sit exactly on top of the Yes button
+                // Sit exactly on top of the Yes button
                 noButton.style.position = 'fixed';
                 noButton.style.left = yesRect.left + 'px';
                 noButton.style.top = yesRect.top + 'px';
                 noButton.style.width = yesRect.width + 'px';
                 noButton.style.height = yesRect.height + 'px';
-                noButton.style.zIndex = '100'; // Make sure it blocks clicks
+                noButton.style.zIndex = '100';
             } else {
-                // PHASE 2: DODGING
-                // Return to auto size
+                // PHASE 2: DODGING WITHIN CARD
                 noButton.style.width = 'auto';
                 noButton.style.height = 'auto';
                 noButton.style.zIndex = '30';
                 
                 const btnWidth = noButton.offsetWidth;
                 const btnHeight = noButton.offsetHeight;
-                
-                const yesCenterX = yesRect.left + (yesRect.width / 2);
-                const yesCenterY = yesRect.top + (yesRect.height / 2);
-                
-                const isSmallScreen = viewportWidth < 600;
-                const rangeX = isSmallScreen ? viewportWidth * 0.25 : 140; 
-                const rangeY = isSmallScreen ? viewportHeight * 0.15 : 120;
 
-                // Generate random coordinates near the Yes button
-                let randomX = yesCenterX + (Math.random() * (rangeX * 2) - rangeX) - (btnWidth / 2);
-                let randomY = yesCenterY + (Math.random() * (rangeY * 2) - rangeY) - (btnHeight / 2);
+                // Define safe random zone inside the white card
+                const minX = cardRect.left + padding;
+                const maxX = cardRect.right - btnWidth - padding;
+                const minY = cardRect.top + padding;
+                const maxY = cardRect.bottom - btnHeight - padding;
 
-                // Ensure it stays in the viewport
-                const minX = padding;
-                const minY = padding;
-                const maxX = viewportWidth - btnWidth - padding;
-                const maxY = viewportHeight - btnHeight - padding;
+                // Safeguard for very small screens or long text:
+                // If the button is wider than the safe zone, just center it horizontally
+                let randomX, randomY;
 
-                randomX = Math.max(minX, Math.min(randomX, maxX));
-                randomY = Math.max(minY, Math.min(randomY, maxY));
+                if (maxX > minX) {
+                    randomX = Math.random() * (maxX - minX) + minX;
+                } else {
+                    randomX = cardRect.left + (cardRect.width / 2) - (btnWidth / 2);
+                }
+
+                if (maxY > minY) {
+                    randomY = Math.random() * (maxY - minY) + minY;
+                } else {
+                    randomY = cardRect.top + (cardRect.height / 2) - (btnHeight / 2);
+                }
 
                 noButton.style.position = 'fixed';
                 noButton.style.left = randomX + 'px';
                 noButton.style.top = randomY + 'px';
 
-                // Make the Yes button grow more enticing as she tries to say No
                 scale += 0.2;
                 if (scale < 4) {
                     yesButton.style.transform = `scale(${scale})`;
