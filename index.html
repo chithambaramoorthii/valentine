@@ -18,7 +18,9 @@
         body {
             font-family: 'Quicksand', sans-serif;
             background: var(--bg-gradient);
+            /* Use dynamic viewport height for mobile browser compatibility */
             height: 100vh;
+            height: 100dvh; 
             margin: 0;
             overflow: hidden;
             display: flex;
@@ -121,26 +123,26 @@
     <div id="hearts-container"></div>
 
     <!-- Question Card -->
-    <div id="main-card" class="glass p-8 md:p-12 rounded-[40px] text-center max-w-sm w-full z-10 entrance-anim mx-4 overflow-hidden">
-        <div class="mb-6 inline-block p-4 bg-pink-100 rounded-full">
-            <svg class="w-12 h-12 text-red-500 fill-current" viewBox="0 0 24 24">
+    <div id="main-card" class="glass p-6 sm:p-12 rounded-[35px] sm:rounded-[40px] text-center max-w-[340px] sm:max-w-sm w-full z-10 entrance-anim mx-4 overflow-hidden">
+        <div class="mb-4 sm:mb-6 inline-block p-3 sm:p-4 bg-pink-100 rounded-full">
+            <svg class="w-10 h-10 sm:w-12 sm:h-12 text-red-500 fill-current" viewBox="0 0 24 24">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>
         </div>
         
-        <h1 id="question" class="text-4xl md:text-5xl font-bold text-gray-800 mb-8 cursive">Will you be my Valentine?</h1>
+        <h1 id="question" class="text-3xl sm:text-5xl font-bold text-gray-800 mb-6 sm:mb-8 cursive leading-tight">Will you be my Valentine?</h1>
         
-        <!-- Button Container: This is the boundary for the No button -->
-        <div id="button-container" class="relative h-64 flex items-center justify-center gap-6 overflow-visible">
+        <!-- Button Container: Shorter height on mobile to keep everything visible -->
+        <div id="button-container" class="relative h-48 sm:h-64 flex items-center justify-center gap-4 sm:gap-6 overflow-visible">
             <!-- Yes Button -->
             <button id="yes-button" 
-                class="bg-[#ff4d6d] hover:bg-[#ff758f] text-white font-bold py-4 px-10 rounded-full shadow-lg transform transition active:scale-90 text-xl z-20">
+                class="bg-[#ff4d6d] hover:bg-[#ff758f] text-white font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-full shadow-lg transform transition active:scale-90 text-lg sm:text-xl z-20">
                 YES! 😍
             </button>
 
             <!-- No Button -->
             <button id="no-button" 
-                class="bg-gray-400 text-white font-semibold py-3 px-6 rounded-full shadow-md absolute left-1/2 ml-12 text-lg z-30 opacity-90 transition-all duration-300">
+                class="bg-gray-400 text-white font-semibold py-2 px-5 sm:py-3 sm:px-6 rounded-full shadow-md absolute left-1/2 ml-8 sm:ml-12 text-base sm:text-lg z-30 opacity-90 transition-all duration-300">
                 No
             </button>
         </div>
@@ -149,12 +151,12 @@
     <!-- Celebration Screen -->
     <div id="celebration" class="fixed inset-0 bg-white/90 backdrop-blur-xl flex flex-col items-center justify-center text-center p-6 z-50">
         <div class="entrance-anim flex flex-col items-center">
-            <div class="text-9xl mb-8">💖</div>
-            <h1 class="text-6xl md:text-8xl text-[#ff4d6d] cursive mb-6">Yay! I love you!</h1>
-            <p class="text-xl md:text-2xl text-gray-600 font-medium max-w-md">
+            <div class="text-7xl sm:text-9xl mb-6 sm:mb-8">💖</div>
+            <h1 class="text-5xl sm:text-8xl text-[#ff4d6d] cursive mb-4 sm:mb-6">Yay! I love you!</h1>
+            <p class="text-lg sm:text-2xl text-gray-600 font-medium max-w-xs sm:max-w-md">
                 You've made me the happiest person ever. <br> Happy Valentine's Day! 🌹✨
             </p>
-            <button onclick="location.reload()" class="mt-12 text-pink-400 hover:text-pink-600 underline font-semibold">
+            <button onclick="location.reload()" class="mt-8 sm:mt-12 text-pink-400 hover:text-pink-600 underline font-semibold">
                 See it again?
             </button>
         </div>
@@ -192,23 +194,21 @@
             noCount++;
             noButton.innerText = messages[Math.floor(Math.random() * messages.length)];
             
-            // Remove initial layout classes once we start moving manually
-            noButton.classList.remove('left-1/2', 'ml-12', 'translate-x-12');
+            // Remove initial layout classes
+            noButton.classList.remove('left-1/2', 'ml-8', 'ml-12');
 
-            // Boundaries are now relative to the buttonContainer
             const containerWidth = buttonContainer.clientWidth;
             const containerHeight = buttonContainer.clientHeight;
             
             if (noCount <= 5) {
                 // PHASE 1: BLOCKING
-                // Match the Yes button's relative position exactly
                 noButton.style.left = yesButton.offsetLeft + 'px';
                 noButton.style.top = yesButton.offsetTop + 'px';
                 noButton.style.width = yesButton.offsetWidth + 'px';
                 noButton.style.height = yesButton.offsetHeight + 'px';
                 noButton.style.zIndex = '100';
             } else {
-                // PHASE 2: DODGING WITHIN CONTAINER
+                // PHASE 2: DODGING
                 noButton.style.width = 'auto';
                 noButton.style.height = 'auto';
                 noButton.style.zIndex = '30';
@@ -216,8 +216,6 @@
                 const btnWidth = noButton.offsetWidth;
                 const btnHeight = noButton.offsetHeight;
 
-                // Simple random position within the container bounds
-                // No complex viewport math needed because it's 'absolute' in a 'relative' box
                 const padding = 10;
                 const maxX = containerWidth - btnWidth - padding;
                 const maxY = containerHeight - btnHeight - padding;
@@ -228,15 +226,13 @@
                 noButton.style.left = randomX + 'px';
                 noButton.style.top = randomY + 'px';
 
-                // Encourage the 'Yes' choice
                 scale += 0.2;
-                if (scale < 4) {
+                if (scale < 3.5) {
                     yesButton.style.transform = `scale(${scale})`;
                 }
             }
         }
 
-        // Listeners for the No button
         noButton.addEventListener('mouseover', moveButton);
         noButton.addEventListener('touchstart', (e) => moveButton(e), { passive: false });
         noButton.addEventListener('click', (e) => {
@@ -244,7 +240,6 @@
             moveButton(e);
         });
 
-        // Success Action
         yesButton.addEventListener('click', () => {
             celebration.classList.add('show');
             
@@ -273,21 +268,20 @@
             }());
         });
 
-        // Floating Hearts Background
         function createHeart() {
             const heart = document.createElement('div');
             heart.classList.add('floating-heart');
             const shapes = ['❤️', '💖', '💗', '💕', '🌸'];
             heart.innerHTML = shapes[Math.floor(Math.random() * shapes.length)];
             heart.style.left = Math.random() * 100 + 'vw';
-            const size = Math.random() * 20 + 15;
+            const size = Math.random() * 15 + 10;
             heart.style.fontSize = size + 'px';
             heart.style.setProperty('--duration', (Math.random() * 4 + 4) + 's');
             heartsContainer.appendChild(heart);
             setTimeout(() => heart.remove(), 8000);
         }
 
-        setInterval(createHeart, 400);
+        setInterval(createHeart, 450);
     </script>
 </body>
 </html>
